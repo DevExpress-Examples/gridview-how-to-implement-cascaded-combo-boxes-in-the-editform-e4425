@@ -1,0 +1,66 @@
+﻿@Html.DevExpress().GridView(settings => {
+    settings.Name = "grid";
+
+    settings.KeyFieldName = "CustomerID";
+    settings.CallbackRouteValues = new { Controller = "Home", Action = "GridViewPartial" };
+
+    settings.SettingsEditing.Mode = GridViewEditingMode.EditFormAndDisplayRow;
+    settings.SettingsEditing.AddNewRowRouteValues = new { Controller = "Home", Action = "EditingAddNew" };
+    settings.SettingsEditing.UpdateRowRouteValues = new { Controller = "Home", Action = "EditingUpdate" };
+    settings.SettingsEditing.DeleteRowRouteValues = new { Controller = "Home", Action = "EditingDelete" };
+
+    settings.CommandColumn.Visible = true;
+    settings.CommandColumn.NewButton.Visible = true;
+    settings.CommandColumn.DeleteButton.Visible = true;
+    settings.CommandColumn.EditButton.Visible = true;
+
+    settings.Columns.Add("CustomerID").Visible = false;
+    settings.Columns.Add("CustomerName");
+    settings.Columns.Add(columnCountry => {
+        columnCountry.Caption = "Country";
+        columnCountry.FieldName = "CountryID";
+
+        columnCountry.ColumnType = MVCxGridViewColumnType.ComboBox;
+        ComboBoxProperties propertiesComboBox = columnCountry.PropertiesEdit as ComboBoxProperties;
+        propertiesComboBox.DataSource = E4425.Models.DataProvider.GetCountries();
+        propertiesComboBox.TextField = "CountryName";
+        propertiesComboBox.ValueField = "CountryID";
+        propertiesComboBox.ValueType = typeof(int);
+
+        propertiesComboBox.EnableSynchronization = DefaultBoolean.False;
+        propertiesComboBox.IncrementalFilteringMode = IncrementalFilteringMode.StartsWith;
+
+        propertiesComboBox.ClientSideEvents.SelectedIndexChanged = "CountriesCombo_SelectedIndexChanged";
+    });
+
+    settings.Columns.Add(columnCity => {
+        columnCity.Caption = "City";
+        columnCity.FieldName = "CityID";
+
+        /*Display Mode*/
+        columnCity.ColumnType = MVCxGridViewColumnType.ComboBox;
+        ComboBoxProperties propertiesComboBox = columnCity.PropertiesEdit as ComboBoxProperties;
+        propertiesComboBox.DataSource = E4425.Models.DataProvider.GetCities();
+        propertiesComboBox.TextField = "CityName";
+        propertiesComboBox.ValueField = "CityID";
+        propertiesComboBox.ValueType = typeof(int);
+        /*Display Mode*/
+
+        /*Edit Mode*/
+        columnCity.SetEditItemTemplateContent(c => {
+            var countryID = c.Grid.GetRowValues(c.Grid.EditingRowVisibleIndex, "CountryID");
+            
+            var cityID = c.Grid.GetRowValues(c.Grid.EditingRowVisibleIndex, c.Column.FieldName);
+            ViewData["CityID"] = cityID;
+
+            var cities = (cityID == null)
+                ? E4425.Models.DataProvider.GetCities()
+                : E4425.Models.DataProvider.GetCities((int)countryID);
+
+            Html.RenderPartial("ComboBoxCityPartial", cities);
+        });
+        /*Edit Mode*/
+        
+    });
+
+}).Bind(Model).GetHtml()

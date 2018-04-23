@@ -1,0 +1,13 @@
+﻿@Html.DevExpress().ComboBox(settings => {
+    settings.CallbackRouteValues = new { Controller = "Home", Action = "ComboBoxCityPartial" };
+    settings.Name = "CityID";
+
+    settings.Properties.TextField = "CityName";
+    settings.Properties.ValueField = "CityID";
+    settings.Properties.ValueType = typeof(int);
+
+    settings.Properties.EnableSynchronization = DefaultBoolean.False;
+    settings.Properties.IncrementalFilteringMode = IncrementalFilteringMode.StartsWith;
+
+    settings.Properties.ClientSideEvents.BeginCallback = "CitiesCombo_BeginCallback";
+}).BindList(Model).Bind(ViewData["CityID"]).GetHtml()
